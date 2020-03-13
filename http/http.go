@@ -47,6 +47,8 @@ func New(api string) (*Server, error) {
 	client.secret = config.SECRET
 
 	client.plugins = make(map[string]p)
+	client.noticeHandler = ignore
+	client.requestHandler = ignore
 
 	client.Logger = true
 	client.logger = &log.Logger{}

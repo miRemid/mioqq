@@ -34,8 +34,12 @@ func New(token, api string) (*API, error) {
 	}
 	switch u.Scheme {
 	case "http":
+		fallthrough
+	case "https":
 		return NewHTTP(token, api)
 	case "ws":
+		fallthrough
+	case "wss":
 		return NewWebsocket(token, api)
 	default:
 		return nil, errors.New("invalid api's scheme")

@@ -11,6 +11,10 @@ import (
 	"github.com/miRemid/mio"
 )
 
+func ignore(ctx *CQContext) {
+	ctx.JSON(204, nil)
+}
+
 // Signature 消息验证中间件
 func (server *Server) signature() mio.HandlerFunc {
 	server.SendLog(Info, "以开启Signature验证, key=%v\n", server.secret)

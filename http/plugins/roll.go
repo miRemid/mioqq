@@ -17,7 +17,7 @@ func init() {
 
 // Roll 随机数插件
 type Roll struct {
-	Cmd  string `hana:"cmd" role:"7"`
+	Cmd  string `mio:"cmd" role:"7"`
 	Area int
 }
 

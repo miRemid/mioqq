@@ -59,7 +59,7 @@ func (server *Server) Register(pluginss ...Plugin) {
 		} else {
 			cmd = fmt.Sprintf("%s", v.FieldByName("Cmd"))
 			if cmd == "" {
-				cmd = f.Tag.Get("hana")
+				cmd = f.Tag.Get("mio")
 			}
 			role = server.permision(v, f)
 		}
