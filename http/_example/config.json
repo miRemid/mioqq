@@ -1,0 +1,7 @@
+{
+    "name": "Amy~",
+    "log_path": "./log",
+    "screct": "amy",
+    "access_token": "asdf",
+    "cmd": ["!", "！", "###"]
+}
