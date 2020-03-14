@@ -32,7 +32,6 @@ func (server *Server) signature() mio.HandlerFunc {
 				if res != sig {
 					server.SendLog(Info, "消息不来自CQHTTP，以屏蔽处理")
 					ctx.JSON(204, nil)
-					ctx.Abort()
 					return
 				}
 				// 重写数据

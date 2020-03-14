@@ -13,19 +13,14 @@ func roll(ctx *http.CQContext) {
 	text := fmt.Sprintf("%d", rand.Intn(1000))
 	message := ctx.API.NewMessage(ctx.UserID, mioqq.PrivateMessage, mioqq.StringContent)
 	message.Text(text)
-	ctx.JSON(200, http.CQParams{
-		"reply": "nihao",
-	})
-	_, err := ctx.API.Send(message)
+	response, err := ctx.API.Send(message)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-}
-
-func middleware(ctx *http.CQContext) {
-	fmt.Println(ctx.MessageType)
-	ctx.Next()
+	fmt.Println(string(response.Data))
+	fmt.Println(response.RetCode)
+	fmt.Println(response.Status)
 }
 
 type Help struct {
@@ -47,6 +42,6 @@ func main() {
 	server.Register(Help{
 		Cmd: "help",
 	})
-	server.Plugin("roll", http.PerPrivate, middleware, roll)
+	server.Plugin("roll", http.PerPrivate, roll)
 	server.Server(":5678")
 }

@@ -139,7 +139,6 @@ func (server *Server) On(handler HandleFunc, flag int) {
 
 func (server *Server) m(ctx *CQContext) {
 	cmd, _ := ctx.CmdParser(ctx.RawMessage, config.CMD...)
-	server.SendLog(Info, cmd)
 	if plugin, ok := server.routers[cmd]; ok {
 		flag := false
 		switch ctx.MessageType {

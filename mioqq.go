@@ -3,6 +3,7 @@ package mioqq
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -102,6 +103,20 @@ func (m *API) sendHTTPRequest(endpoint string, reader io.Reader) (CQAPIResponse,
 		return response, err
 	}
 	defer resp.Body.Close()
+	switch resp.StatusCode {
+	case 401:
+		return response, errors.New("未找到access_token，请检查配置文件")
+	case 403:
+		return response, errors.New("access_token不匹配，请检查配置文件")
+	case 406:
+		return response, errors.New("POST Content-Type不支持，请联系SDK作者")
+	case 400:
+		return response, errors.New("POST 请求正文格式错误，请联系SDK作者")
+	case 404:
+		return response, fmt.Errorf("/%s 不存在，请联系SDK作者", endpoint)
+	default:
+		break
+	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return response, err
