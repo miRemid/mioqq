@@ -106,12 +106,35 @@ func main() {
 运行之后，对目标QQ输入`!roll`即可触发插件并返回一个随机数
 > 服务器默认对好友请求或其他请求消息、Notice消息不以处理
 
-## Plugin插件接口
-`mioqq/http`的插件需要满足`mioqq/http/Plugin`接口，其结构如下
+# 消息处理接口
+`mioqq/http`提供了两种注册功能的接口，分别是
+- 仿http router
+- 结构体注册
+
+## 仿http router
+`mioqq/http`提供了一个和`http`差不多风格的注册接口，其优点是支持消息中间件
+```golang
+func main() {
+	server, err := http.New("CQHTTP_API")
+	if err != nil {
+		server.SendLog(http.Error, err.Error())
+		return
+    }
+    // 注册一个命令为roll的功能
+    // Plugin函数接受以下参数
+    // 1. cmd string: 命令的标识符，例如如下的roll
+    // 2. per int: 命令的权限，分别为私人，群组，讨论组，例如如下的只接受私人和群组消息
+    // 3. 后面接受多个http.HandlerFunc，因此http like注册方式支持中间件，接受的消息按顺序执行
+	server.Plugin("roll", http.PerPrivate | http.PerGroup, middleware, roll)
+	server.Server(":5678")
+}
+```
+
+## 结构体注册
+`mioqq/http`的插件需要满足`mioqq/http/Plugin`接口，其优点是可以让现有的结构体注册为插件，缺点是不支持中间件。其结构如下
 ```golang
 type Plugin interface{
     Parse(ctx *http.CQContext)
-    Help() string
 }
 ```
 ## Plugin标准结构示范
@@ -131,10 +154,6 @@ func (e Example) Parse(ctx *http.CQContext) {
     }else {
         ...
     }
-}
-
-func (e Example) Help() string {
-    return "return hahaha"
 }
 ```
 ## Plugin 响应消息权限

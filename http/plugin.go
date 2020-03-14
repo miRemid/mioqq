@@ -6,32 +6,31 @@ import (
 	"strconv"
 )
 
+// PluginRouter 插件路由
+type PluginRouter struct {
+	handlers []HandleFunc
+	private  bool
+	group    bool
+	discuss  bool
+}
+
 // Plugin is the plugin of hanabi
 type Plugin interface {
 	Parse(ctx *CQContext)
-	Help() string
 }
 
 // HandleFunc 处理函数
 type HandleFunc func(*CQContext)
 
-type p struct {
-	plugin  Plugin
-	name    string
-	private bool
-	group   bool
-	discuss bool
-}
-
 func (server *Server) permision(v reflect.Value, f reflect.StructField) (per int) {
 	role := f.Tag.Get("role")
 	if role == "" {
-		server.SendLog(Warn, "[WA] %s插件权限读取失败，以设置默认权限为7", v.Type())
+		server.SendLog(Warn, "%s插件权限读取失败，以设置默认权限为7", v.Type())
 		return 7
 	}
 	tmp, err := strconv.Atoi(role)
 	if err != nil {
-		server.SendLog(Warn, "[WA] %s插件权限读取失败，以设置默认权限为7", v.Type())
+		server.SendLog(Warn, "%s插件权限读取失败，以设置默认权限为7", v.Type())
 		per = 7
 	} else {
 		per = tmp
@@ -67,18 +66,6 @@ func (server *Server) Register(pluginss ...Plugin) {
 			server.SendLog(Error, "%s插件读取失败，检查初始化是否正确或tag是否包含hana字段", v.Type())
 			continue
 		}
-		if _, ok := server.plugins[cmd]; ok {
-			server.SendLog(Info, "%s插件覆盖成功", v.Type())
-		} else {
-			server.SendLog(Info, "%s插件读取成功", v.Type())
-		}
-		private, group, discuss := server.checkPermission(role)
-		server.plugins[cmd] = p{
-			plugin:  plugin,
-			name:    fmt.Sprintf("%s", v.Type()),
-			private: private,
-			group:   group,
-			discuss: discuss,
-		}
+		server.Plugin(cmd, role, plugin.Parse)
 	}
 }

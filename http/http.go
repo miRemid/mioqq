@@ -21,13 +21,22 @@ const (
 	request = "request"
 )
 
+const (
+	// PerPrivate 私人消息
+	PerPrivate = 1
+	// PerGroup 群组消息
+	PerGroup = 1 << 1
+	// PerDiscuss 讨论组消息
+	PerDiscuss = 1 << 2
+)
+
 // Server Http服务
 type Server struct {
 	engine *mio.Engine
 	api    *mioqq.API
 	secret string
 
-	plugins        map[string]p
+	routers        map[string]PluginRouter
 	noticeHandler  HandleFunc
 	requestHandler HandleFunc
 
@@ -46,7 +55,7 @@ func New(api string) (*Server, error) {
 	client.engine = mio.New()
 	client.secret = config.SECRET
 
-	client.plugins = make(map[string]p)
+	client.routers = make(map[string]PluginRouter)
 	client.noticeHandler = ignore
 	client.requestHandler = ignore
 
@@ -98,6 +107,21 @@ func (server *Server) transport(ctx *CQContext) {
 	ctx.JSON(204, nil)
 }
 
+// Plugin 添加一个插件
+func (server *Server) Plugin(cmd string, per int, handlers ...HandleFunc) {
+	router := PluginRouter{}
+	private, group, discuss := server.checkPermission(per)
+	router.private = private
+	router.group = group
+	router.discuss = discuss
+	router.handlers = append([]HandleFunc{}, handlers...)
+	if _, ok := server.routers[cmd]; ok {
+		server.SendLog(Warn, "%s 已存在，以覆盖处理\n", cmd)
+	}
+	server.routers[cmd] = router
+	server.SendLog(Info, "cmd: %s --> %d handlers", cmd, len(handlers))
+}
+
 // On set the handler function
 func (server *Server) On(handler HandleFunc, flag int) {
 	switch flag {
@@ -115,30 +139,32 @@ func (server *Server) On(handler HandleFunc, flag int) {
 
 func (server *Server) m(ctx *CQContext) {
 	cmd, _ := ctx.CmdParser(ctx.RawMessage, config.CMD...)
-	if plugin, ok := server.plugins[cmd]; ok {
+	server.SendLog(Info, cmd)
+	if plugin, ok := server.routers[cmd]; ok {
 		flag := false
 		switch ctx.MessageType {
 		case "private":
 			if plugin.private {
-				server.SendLog(Info, "私人消息，响应%s插件", plugin.name)
+				server.SendLog(Info, "私人消息，响应%s插件", cmd)
 				flag = true
 			}
 			break
 		case "group":
 			if plugin.group {
-				server.SendLog(Info, "群组消息，响应%s插件", plugin.name)
+				server.SendLog(Info, "群组消息，响应%s插件", cmd)
 				flag = true
 			}
 			break
 		case "discuss":
 			if plugin.discuss {
-				server.SendLog(Info, "讨论族消息，响应%s插件", plugin.name)
+				server.SendLog(Info, "讨论族消息，响应%s插件", cmd)
 				flag = true
 			}
 			break
 		}
 		if flag {
-			plugin.plugin.Parse(ctx)
+			ctx.handlers = append([]HandleFunc{}, plugin.handlers...)
+			ctx.handlers[0](ctx)
 		}
 	}
 }

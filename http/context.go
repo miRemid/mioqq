@@ -14,8 +14,10 @@ type CQParams map[string]interface{}
 
 // CQContext 用户对话
 type CQContext struct {
-	Context *mio.Context
-	API     *mioqq.API
+	Context  *mio.Context
+	API      *mioqq.API
+	handlers []HandleFunc
+	index    int
 
 	quick bool
 	ws    bool
@@ -44,6 +46,15 @@ type CQContext struct {
 	Flag        string `json:"flag,omitempty"`
 	Comment     string `json:"comment"`
 	Duration    int64  `json:"duration"`
+}
+
+// Next 进行下一个中间件
+func (context *CQContext) Next() {
+	context.index++
+	s := len(context.handlers)
+	if context.index != s {
+		context.handlers[context.index](context)
+	}
 }
 
 // CmdParser 解析Cmd命令

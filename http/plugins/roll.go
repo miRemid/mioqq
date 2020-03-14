@@ -3,7 +3,6 @@ package plugins
 import (
 	"fmt"
 	"math/rand"
-	"reflect"
 	"time"
 
 	"github.com/miRemid/mioqq"
@@ -21,6 +20,7 @@ type Roll struct {
 	Area int
 }
 
+// Parse 解析函数
 func (r Roll) Parse(ctx *http.CQContext) {
 	if r.Area == 0 {
 		r.Area = 100
@@ -33,12 +33,4 @@ func (r Roll) Parse(ctx *http.CQContext) {
 		fmt.Println(err)
 		return
 	}
-}
-
-func (r Roll) Help() string {
-	v := reflect.ValueOf(&r.Area)
-	if r.Area == 0 {
-		v.Elem().SetInt(100)
-	}
-	return fmt.Sprintf("随机生成一个数字(0-%d)", r.Area)
 }
