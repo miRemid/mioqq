@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/mio-qq/mio/cqcode"
+	"github.com/miRemid/mioqq/cqcode"
 )
 
 const (

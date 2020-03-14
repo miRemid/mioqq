@@ -1,6 +1,4 @@
 github.com/buger/jsonparser v0.0.0-20191204142016-1a29609e0929 h1:MW/JDk68Rny52yI0M0N+P8lySNgB+NhpI/uAmhgOhUM=
 github.com/buger/jsonparser v0.0.0-20191204142016-1a29609e0929/go.mod h1:tgcrVJ81GPSF0mz+0nu1Xaz0fazGPrmmJfJtxjbHhUQ=
-github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvKCM=
-github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/miRemid/mio v0.0.1 h1:MJIWAPv2ic9AGo/JCd/6YdzycikExp0jVb6MV/g+V7s=
 github.com/miRemid/mio v0.0.1/go.mod h1:xHS48picBRsW8jFVSt1DvEjNfNdW5ekrXyvVojCoyG0=
