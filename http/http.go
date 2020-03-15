@@ -138,8 +138,9 @@ func (server *Server) On(handler HandleFunc, flag int) {
 }
 
 func (server *Server) m(ctx *CQContext) {
-	cmd, _ := ctx.CmdParser(ctx.RawMessage, config.CMD...)
+	cmd, params := ctx.CmdParser(ctx.RawMessage, config.CMD...)
 	if plugin, ok := server.routers[cmd]; ok {
+		ctx.Params = params
 		flag := false
 		switch ctx.MessageType {
 		case "private":

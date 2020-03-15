@@ -18,6 +18,7 @@ type CQContext struct {
 	API      *mioqq.API
 	handlers []HandleFunc
 	index    int
+	Params   []string
 
 	quick bool
 	ws    bool
