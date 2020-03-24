@@ -21,6 +21,9 @@ var (
 	NAME string
 	// AllowAllRequest 允许所有加好友请求
 	AllowAllRequest bool
+
+	// Driver 数据库驱动
+	Driver string
 )
 
 func init() {

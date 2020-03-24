@@ -94,7 +94,6 @@ func (context *CQContext) JSON(code int, body interface{}) error {
 	if context.quick {
 		return nil
 	}
-	context.Context.Writer.WriteHeader(code)
 	if body == nil {
 		return nil
 	}
@@ -103,8 +102,39 @@ func (context *CQContext) JSON(code int, body interface{}) error {
 		return err
 	}
 	context.Context.Writer.Write(buf.Bytes())
+	context.Context.Writer.WriteHeader(code)
 	context.quick = true
 	return nil
+}
+
+// Send 发送一条字符串消息
+func (context *CQContext) Send(message string, async bool) (mioqq.CQAPIResponse, error) {
+	var msg *mioqq.Message
+	switch context.MessageType {
+	case "private":
+		if async {
+			msg = context.API.NewMessage(context.UserID, mioqq.PrivateMessageAsync, mioqq.StringContent)
+		} else {
+			msg = context.API.NewMessage(context.UserID, mioqq.PrivateMessage, mioqq.StringContent)
+		}
+		break
+	case "group":
+		if async {
+			msg = context.API.NewMessage(context.UserID, mioqq.GroupMessageAsync, mioqq.StringContent)
+		} else {
+			msg = context.API.NewMessage(context.UserID, mioqq.GroupMessage, mioqq.StringContent)
+		}
+		break
+	case "discuss":
+		if async {
+			msg = context.API.NewMessage(context.UserID, mioqq.DiscussMessageAsync, mioqq.StringContent)
+		} else {
+			msg = context.API.NewMessage(context.UserID, mioqq.DiscussMessage, mioqq.StringContent)
+		}
+		break
+	}
+	msg.Text(message)
+	return context.API.Send(msg)
 }
 
 // User is the sender of cqevent

@@ -3,6 +3,7 @@ package http
 import (
 	"log"
 
+	"github.com/jinzhu/gorm"
 	"github.com/miRemid/mio"
 	"github.com/miRemid/mioqq"
 	"github.com/miRemid/mioqq/http/config"
@@ -42,6 +43,11 @@ type Server struct {
 
 	logger *log.Logger
 	Logger bool
+
+	// Database
+	db         *gorm.DB
+	Driver     string
+	ConnectURI string
 }
 
 // New 新建HTTP
@@ -54,15 +60,12 @@ func New(api string) (*Server, error) {
 	client.api = tmp
 	client.engine = mio.New()
 	client.secret = config.SECRET
-
 	client.routers = make(map[string]PluginRouter)
 	client.noticeHandler = ignore
 	client.requestHandler = ignore
-
 	client.Logger = true
 	client.logger = &log.Logger{}
 	config.SetLogger(client.logger)
-
 	return &client, nil
 }
 
@@ -83,11 +86,25 @@ func (server *Server) Engine() *mio.Engine {
 	return server.engine
 }
 
+func (server *Server) noticeHTTP(ctx *mio.Context) {
+
+}
+func (server *Server) requestHTTP(ctx *mio.Context) {
+
+}
+
 // Server 开启服务
 func (server *Server) Server(addr string) error {
 	server.engine.Use(server.signature())
 	server.engine.POST("/", server.receive)
 	server.engine.GET("/", server.receive)
+
+	api := server.engine.NewGroup("/api")
+	{
+		api.GET("notice", server.noticeHTTP)
+		api.GET("request", server.requestHTTP)
+	}
+
 	return server.engine.Server(addr)
 }
 
