@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 
 	"github.com/miRemid/mioqq"
@@ -13,14 +14,12 @@ func roll(ctx *http.CQContext) {
 	text := fmt.Sprintf("%d", rand.Intn(1000))
 	message := ctx.API.NewMessage(ctx.UserID, mioqq.PrivateMessage, mioqq.StringContent)
 	message.Text(text)
-	response, err := ctx.API.Send(message)
+	_, err := ctx.API.Send(message)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(string(response.Data))
-	fmt.Println(response.RetCode)
-	fmt.Println(response.Status)
+
 }
 
 type Help struct {
@@ -28,9 +27,10 @@ type Help struct {
 }
 
 func (help Help) Parse(ctx *http.CQContext) {
-	ctx.JSON(200, http.CQParams{
-		"reply": "roll，随即一个数字",
-	})
+	_, err := ctx.Send("roll, 随机一个数字", false)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func main() {

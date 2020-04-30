@@ -48,6 +48,8 @@ type Server struct {
 	db         *gorm.DB
 	Driver     string
 	ConnectURI string
+
+	messageChan chan *CQContext
 }
 
 // New 新建HTTP
@@ -66,19 +68,26 @@ func New(api string) (*Server, error) {
 	client.Logger = true
 	client.logger = &log.Logger{}
 	config.SetLogger(client.logger)
+
+	client.messageChan = make(chan *CQContext, 0)
 	return &client, nil
 }
 
 func (server *Server) receive(ctx *mio.Context) {
+	// 接受信息
+	// 1. 返回相应
+	// 2. 转化为CQContext
+	// 3. 加入任务队列
 	var context CQContext
 	context.Context = ctx
 	context.API = server.api
 	if err := ctx.ReadJSON(&context); err != nil {
 		server.SendLog(Error, "解析数据失败: %v", err)
-		ctx.JSON(204, nil)
-		return
+	} else {
+		server.messageChan <- &context
+		// go server.transport(&context)
 	}
-	server.transport(&context)
+	ctx.JSON(204, nil)
 }
 
 // Engine 获取http服务端
@@ -104,8 +113,15 @@ func (server *Server) Server(addr string) error {
 		api.GET("notice", server.noticeHTTP)
 		api.GET("request", server.requestHTTP)
 	}
-
+	go server.handleMessage()
 	return server.engine.Server(addr)
+}
+
+func (server *Server) handleMessage() {
+	for {
+		var ctx = <-server.messageChan
+		go server.transport(ctx)
+	}
 }
 
 func (server *Server) transport(ctx *CQContext) {
@@ -121,7 +137,6 @@ func (server *Server) transport(ctx *CQContext) {
 		server.requestHandler(ctx)
 		break
 	}
-	ctx.JSON(204, nil)
 }
 
 // Plugin 添加一个插件
